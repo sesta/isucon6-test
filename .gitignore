@@ -6,5 +6,15 @@
 .screenrc_catatsuy
 .ssh
 .toprc
+.editorconfig
+LICENSE
+README.md
+ansible
+azure
+bench
+portal
+provisioning
+regulation.md
 benchmark.sh
 dotfiles_catatsuy
+*.swp
