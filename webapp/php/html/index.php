@@ -103,6 +103,13 @@ function getStrokes($dbh, $room_id, $greater_than_id) {
     return selectAll($dbh, $sql, [':room_id' => $room_id, ':greater_than_id' => $greater_than_id]);
 }
 
+function getStrokeCounts($dbh, $room_ids, $greater_than_id) {
+    $room_ids_str = implode(',', $room_ids);
+    $sql = 'SELECT `room_id`, count(*) as count FROM `strokes`';
+    $sql .= ' WHERE `room_id` IN (' . $room_ids_str . ') AND `id` > :greater_than_id GROUP BY `room_id`';
+    return selectAll($dbh, $sql, [':greater_than_id' => $greater_than_id]);
+}
+
 function getRoom($dbh, $room_id) {
     $sql = 'SELECT `id`, `name`, `canvas_width`, `canvas_height`, `created_at` FROM `rooms` WHERE `id` = :room_id';
     return selectOne($dbh, $sql, [':room_id' => $room_id]);
@@ -169,9 +176,11 @@ $app->get('/api/rooms', function ($request, $response, $args) {
     $results = selectAll($dbh, $sql);
 
     $rooms = [];
+    $stroke_counts = getStrokeCounts($dbh, array_column($results, 'room_id'), 0);
+    $stroke_counts_map = array_column($stroke_counts, null, 'room_id');
     foreach ($results as $result) {
         $room = getRoom($dbh, $result['room_id']);
-        $room['stroke_count'] = count(getStrokes($dbh, $room['id'], 0));
+        $room['stroke_count'] = $stroke_counts_map[$result['room_id']]['count'];
         $rooms[] = $room;
     }
 
